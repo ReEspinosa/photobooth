@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PHOTOBOOTH</title>
+<meta name="description" content="Cabina de fotos vintage: 3 o 4 poses, revelado en blanco y negro o sepia, y tu tira saliendo de la ranura.">
+<meta name="theme-color" content="#22170f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&amp;family=Hanken+Grotesk:wght@400;500;600&amp;family=DM+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="madera">
+
+<!-- patrón de estrellas compartido por la ranura y la ventanilla -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <path id="pb-star" d="M0,-10 L2.65,-3.64 L9.51,-3.09 L4.28,1.39 L5.88,8.09 L0,4.5 L-5.88,8.09 L-4.28,1.39 L-9.51,-3.09 L-2.65,-3.64 Z"/>
+    <pattern id="pb-stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <g fill="#15110e">
+        <use href="#pb-star" transform="translate(18 20) rotate(12) scale(1.5)"/>
+        <use href="#pb-star" transform="translate(64 14) rotate(-8) scale(.8)"/>
+        <use href="#pb-star" transform="translate(100 36) rotate(20) scale(1.8)"/>
+        <use href="#pb-star" transform="translate(42 62) rotate(-20) scale(1)"/>
+        <use href="#pb-star" transform="translate(86 86) rotate(5) scale(1.3)"/>
+        <use href="#pb-star" transform="translate(22 98) rotate(-12) scale(1.7)"/>
+        <use href="#pb-star" transform="translate(110 108) rotate(30) scale(.7)"/>
+        <use href="#pb-star" transform="translate(60 108) rotate(0) scale(.6)"/>
+      </g>
+    </pattern>
+  </defs>
+</svg>
+
+<template id="tpl-ranura">
+  <div class="ranura">
+    <svg class="estrellas" aria-hidden="true"><rect width="100%" height="100%" fill="url(#pb-stars)" fill-opacity=".92"/></svg>
+    <div class="r-slot"></div>
+    <div class="r-hueco"></div>
+    <div class="r-bandeja-fondo"></div>
+    <div class="r-clip"><div class="r-tira"><img alt="Tu tira de fotos saliendo de la ranura"><div class="r-velos"></div></div></div>
+    <div class="r-soporte izq"></div><div class="r-soporte der"></div>
+    <div class="r-rueda izq"></div><div class="r-rueda der"></div>
+    <div class="r-eje"></div>
+    <div class="r-labio"><span>RECOJA SU FOTO AQUÍ</span></div>
+  </div>
+</template>
+
+<main id="app">
+
+  <!-- 01 INICIO -->
+  <section class="pantalla" id="p-inicio" data-pantalla>
+    <div class="inicio">
+      <div class="inicio-maquina" data-ranura data-h="440"></div>
+      <div class="inicio-panel">
+        <div class="meta-fila"><span>CABINA Nº 04</span><span>CDMX</span></div>
+        <div class="letrero">
+          <h1>PHOTOBOOTH</h1>
+          <span>FOTOS EN 3 <em>SEGUNDOS</em></span>
+        </div>
+        <p class="lede">Siéntate frente a la cámara, haz tus poses y mira cómo sale tu tira por la ranura.</p>
+        <div class="selectores">
+          <div class="campo">
+            <span class="etiqueta">FORMATO</span>
+            <div class="segmentado" role="radiogroup" aria-label="Formato">
+              <button type="button" data-n="3" aria-pressed="false">3 fotos</button>
+              <button type="button" data-n="4" aria-pressed="true">4 fotos</button>
+            </div>
+          </div>
+          <div class="campo">
+            <span class="etiqueta">FILTRO</span>
+            <div class="segmentado" role="radiogroup" aria-label="Filtro">
+              <button type="button" data-tono="bw" aria-pressed="true">B/N</button>
+              <button type="button" data-tono="sepia" aria-pressed="false">Sepia</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn primario ancho" id="b-tomar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="12.8" r="3.6"/></svg>
+          Tomar fotos
+        </button>
+        <p class="nota">Tus fotos no salen de tu dispositivo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02/03/04/05 CABINA: cargando, permiso, captura, flash -->
+  <section class="pantalla" id="p-cabina" data-pantalla hidden>
+    <div class="columna">
+      <div class="barra">
+        <button type="button" class="btn-redondo" id="b-cerrar" aria-label="Cancelar sesión">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+        <div class="segmentos" id="segmentos" aria-hidden="true"></div>
+        <button type="button" class="btn-redondo" id="b-girar" aria-label="Cambiar de cámara">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9a8 8 0 0 1 14-3l2 2"/><path d="M20 4v4h-4"/><path d="M20 15a8 8 0 0 1-14 3l-2-2"/><path d="M4 20v-4h4"/></svg>
+        </button>
+      </div>
+      <div class="titulo-fila">
+        <h2 class="titulo-italica" id="cab-titulo">Un momento</h2>
+        <span class="etiqueta" id="cab-estado">PREPARANDO</span>
+      </div>
+
+      <div class="ventanilla" id="ventanilla" data-estado="cargando">
+        <svg class="estrellas" aria-hidden="true"><rect width="100%" height="100%" fill="url(#pb-stars)" fill-opacity=".92"/></svg>
+        <div class="v-lente"></div>
+        <div class="placa v-mira"><span>▲</span>MIRA AQUÍ<span>▲</span></div>
+        <div class="v-bisel"></div>
+        <div class="v-ventana">
+          <video id="video" playsinline muted></video>
+          <div class="v-envivo" id="v-envivo"><i></i>EN VIVO · <b id="v-tono">B/N</b></div>
+          <div class="v-contador" id="v-contador" hidden>
+            <svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="92" class="c-fondo"/><circle cx="100" cy="100" r="92" class="c-arco" id="c-arco"/></svg>
+            <span id="c-numero" role="timer">3</span>
+          </div>
+          <div class="v-flash" id="v-flash"></div>
+          <div class="v-cargando">
+            <div class="focos" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span>Calentando el flash…</span>
+          </div>
+          <div class="v-denegado">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="12.8" r="3.6"/><path d="M3.5 3.5l17 17"/></svg>
+            <span>SIN ACCESO A LA CÁMARA</span>
+          </div>
+        </div>
+        <div class="placa v-pie" id="v-pie">4 POSES · 3 SEG CADA UNA</div>
+      </div>
+
+      <div class="debajo" id="cab-debajo">
+        <!-- cargando -->
+        <div data-modo="cargando">
+          <div class="fila-meta"><span>PREPARANDO CÁMARA</span></div>
+          <div class="barra-progreso indeterminada"><i></i></div>
+          <p class="ayuda">Si tu navegador pregunta, toca «Permitir» para usar la cámara.</p>
+        </div>
+        <!-- permiso -->
+        <div data-modo="permiso" hidden>
+          <div class="tarjeta-oscura">
+            <strong id="perm-titulo">Para activarla</strong>
+            <span id="perm-texto">Haz clic en el ícono de cámara o candado junto a la dirección › Permitir cámara, y vuelve a intentar.</span>
+          </div>
+          <div class="dos">
+            <button type="button" class="btn primario" id="b-reintentar">Reintentar</button>
+            <label class="btn secundario" for="f-subir">Subir fotos</label>
+          </div>
+        </div>
+        <!-- captura -->
+        <div data-modo="captura" hidden>
+          <div class="miniaturas" id="miniaturas"></div>
+          <div class="pastilla" id="pastilla" hidden><span>Cambia de pose</span><b id="pastilla-s">2 s</b></div>
+          <p class="ayuda centrada" id="cab-ayuda">Mira a la lente. El flash sale al llegar a cero.</p>
+        </div>
+      </div>
+    </div>
+    <div class="destello" id="destello" aria-hidden="true"></div>
+  </section>
+
+  <!-- 06 IMPRIMIENDO -->
+  <section class="pantalla" id="p-imprimiendo" data-pantalla hidden>
+    <div class="columna">
+      <div class="tarjeta-hueso cabecera">
+        <div>
+          <span class="mini-letrero">PHOTOBOOTH</span>
+          <h2 class="titulo-italica oscuro">Revelando…</h2>
+        </div>
+        <span class="tiempo" id="imp-tiempo">0.0 / 3.0 s</span>
+      </div>
+      <div data-ranura data-h="590" id="imp-ranura"></div>
+      <div class="tarjeta-hueso">
+        <div class="barra-progreso clara"><i id="imp-barra"></i></div>
+        <label class="interruptor" for="t-sonido">
+          <span><strong>Sonido de impresora</strong><small>Vibra al caer la tira en la bandeja</small></span>
+          <input type="checkbox" id="t-sonido" checked>
+          <i aria-hidden="true"></i>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 RESULTADO -->
+  <section class="pantalla" id="p-resultado" data-pantalla hidden>
+    <div class="resultado">
+      <div class="res-tira">
+        <img id="res-img" alt="Tu tira de fotos">
+      </div>
+      <div class="res-panel">
+        <div class="res-cabecera">
+          <h2 class="mini-letrero grande">PHOTOBOOTH</h2>
+          <span class="etiqueta oscura" id="res-fecha"></span>
+        </div>
+        <div class="campo">
+          <div class="fila-meta oscura"><span>FONDO</span><span id="fondo-nombre">LUNARES</span></div>
+          <div class="muestras" id="muestras" role="radiogroup" aria-label="Fondo"></div>
+        </div>
+        <div class="fila-texto">
+          <label class="oculto" for="i-texto">Texto del borde</label>
+          <input id="i-texto" type="text" maxlength="28" placeholder="Texto del borde">
+          <label class="chip-check" for="i-fecha"><input id="i-fecha" type="checkbox" checked>Fecha</label>
+        </div>
+        <div class="acciones">
+          <a class="btn primario" id="b-descargar" download>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>
+            Descargar
+          </a>
+          <button type="button" class="btn contorno" id="b-compartir">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4"/><path d="M8 7.5 12 3.5l4 4"/><path d="M7 11H5.5v9h13v-9H17"/></svg>
+            Compartir
+          </button>
+          <button type="button" class="btn contorno cuadrado" id="b-repetir" aria-label="Repetir sesión">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 COMPARTIR (hoja) -->
+  <div class="velo-hoja" id="hoja" hidden>
+    <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="hoja-titulo">
+      <div class="hoja-vista"><img id="hoja-img" alt="Vista previa de tu historia 9:16"><div class="hoja-cargando" id="hoja-cargando" hidden>Preparando video…</div></div>
+      <div class="hoja-cuerpo">
+        <div class="hoja-cabecera">
+          <h2 id="hoja-titulo" class="titulo-italica oscuro">Compartir historia</h2>
+          <button type="button" class="btn-redondo claro" id="b-hoja-cerrar" aria-label="Cerrar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+        <div class="segmentado claro" role="radiogroup" aria-label="Formato a compartir">
+          <button type="button" data-formato="video" aria-pressed="true">Video con animación</button>
+          <button type="button" data-formato="imagen" aria-pressed="false">Solo imagen</button>
+        </div>
+        <div class="dos">
+          <button type="button" class="btn primario" id="b-hoja-guardar">Guardar 9:16</button>
+          <button type="button" class="btn contorno" id="b-hoja-compartir">Compartir…</button>
+        </div>
+        <p class="ayuda oscura" id="hoja-ayuda">El video dura unos 4 segundos y está listo para historias o reels.</p>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="f-subir" accept="image/*" multiple hidden>
+  <div class="aviso" id="aviso" role="status"></div>
+</main>
+
+<script src="render.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
